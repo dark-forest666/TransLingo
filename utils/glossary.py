@@ -2,23 +2,26 @@
 
 import os
 import requests
+import streamlit as st
 from dotenv import load_dotenv
 
-load_dotenv()
+if not os.getenv("STREAMLIT_CLOUD"):
+    load_dotenv()
 
-api_key = os.getenv("ZHIPU_API_KEY")
-base_url = os.getenv("ZHIPU_API_URL")
+try:
+    api_key = st.secrets.get("ZHIPU_API_KEY", os.getenv("ZHIPU_API_KEY"))
+    base_url = st.secrets.get("ZHIPU_API_URL", os.getenv("ZHIPU_API_URL"))
+    model = st.secrets.get("ZHIPU_MODEL", os.getenv("ZHIPU_MODEL", "glm-4-flash"))
+except Exception:
+    api_key = os.getenv("ZHIPU_API_KEY")
+    base_url = os.getenv("ZHIPU_API_URL")
+    model = os.getenv("ZHIPU_MODEL", "glm-4-flash")
 
 if not api_key or not base_url:
-    raise ValueError("请先配置 ZHIPU_API_KEY 和 ZHIPU_API_URL")
+    raise ValueError("请在 Streamlit Cloud 的 Secrets 中设置 ZHIPU_API_KEY 和 ZHIPU_API_URL")
 
-
-def explain_technical_terms(original_text: str, model: str = None, temperature: float = 0.5) -> str:
-    """
-    从技术原文中提取专业名词，并给出通俗解释。
-    返回格式为 Markdown 列表。
-    """
-    model = model or os.getenv("ZHIPU_MODEL", "glm-4-flash")
+def explain_technical_terms(original_text: str, model_override: str = None, temperature: float = 0.5) -> str:
+    used_model = model_override or model
     url = base_url.rstrip("/") + "/chat/completions"
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -39,7 +42,7 @@ def explain_technical_terms(original_text: str, model: str = None, temperature: 
 请输出："""
 
     payload = {
-        "model": model,
+        "model": used_model,
         "messages": [{"role": "user", "content": prompt}],
         "temperature": temperature,
         "max_tokens": 800,

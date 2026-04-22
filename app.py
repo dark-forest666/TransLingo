@@ -6,6 +6,8 @@ from utils.prompts import build_prompt_tech_to_business, build_prompt_business_t
 from utils.jargon import calculate_jargon_density
 from utils.glossary import explain_technical_terms
 
+if "translation_count" not in st.session_state:
+    st.session_state.translation_count = 0
 # 页面配置
 st.set_page_config(page_title="TransLingo", layout="wide", page_icon="🔄")
 
@@ -46,10 +48,10 @@ with st.sidebar:
         st.markdown("> 原文：服务器又崩了，咋回事啊？")
         st.markdown("> 翻译：服务器像熬夜的程序员一样打了个盹，我们给它冲杯咖啡（重启）就好啦～")
 
-# 处理翻译（点击翻译按钮时）
+# 在翻译按钮点击逻辑中增加判断
 if translate_btn:
-    if not original_text.strip():
-        st.warning("⚠️ 请输入待翻译的原文")
+    if st.session_state.translation_count >= 10:
+        st.error("⚠️ 本会话已达到 10 次翻译上限，请刷新页面重新开始。")
         st.stop()
 
     # 根据方向选择 prompt 构造函数
