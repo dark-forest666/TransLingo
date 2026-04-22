@@ -1,0 +1,7 @@
+# 忽略环境及敏感文件
+.env
+__pycache__/
+*.pyc
+.streamlit/secrets.toml
+venv/
+.idea/
